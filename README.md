@@ -2,7 +2,7 @@
 
 **🚀 Quick Start: Check out our [blape-demo.ipynb](./blape-demo.ipynb) for a comprehensive demonstration!**
 
-**☁️ Try it online: [Run the demo directly in Google Colab](https://drive.google.com/file/d/1txVTaIwoqdt0b7VSS80Vj45Vv4nStDQR/view?usp=drive_link) without any setup!**
+**☁️ Try it online: [Run the demo directly in Google Colab](https://colab.research.google.com/drive/1txVTaIwoqdt0b7VSS80Vj45Vv4nStDQR) without any setup!**
 
 A Python package for SERS (surface-enhanced Raman spectroscopy) signal preprocessing and analysis using the BLaPE (blurred-Laplacian peak extraction) algorithm. This package provides easy data download, fast BLaPE algorithm application, and evaluation pipelines for multiclass classification.
 
