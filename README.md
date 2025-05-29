@@ -20,7 +20,7 @@ pip install git+https://github.com/snu-heritage/blape-sers.git
 
 By default, the data is downloaded to the `data/` folder in the current directory. After the download is complete, it is recommended to check that `*.csv` files have been created in that path.
 
-Our data is provided through [**Zenodo**](https://zenodo.org/records/15487399), so for faster download, you can download the same data through [**our GoogleDrive folder**](https://drive.google.com/drive/folders/1o4CAkfUIpgeqJb1EIK4ruCsm3VMHinA5?usp=drive_link).
+Our data is provided through [**Zenodo**](https://zenodo.org/records/15487399), so for faster download, you can download the same data through [**our GoogleDrive folder**](https://drive.google.com/drive/folders/1o4CAkfUIpgeqJb1EIK4ruCsm3VMHinA5?usp=sharing).
 
 ## Quick Usage
 
