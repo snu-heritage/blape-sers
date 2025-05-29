@@ -2,10 +2,10 @@ from setuptools import setup, find_packages
 
 setup(
     name="blape",
-    version="0.1.0",
+    version="1.0",
     packages=find_packages(),
     install_requires=[
-        numpy, scipy, pybaselines, tqdm, scikit-learn
+        "numpy", "scipy", "pybaselines", "tqdm", "scikit-learn"
     ],
     author="Juno Hwang",
     author_email="wnsdh10@snu.ac.kr",
