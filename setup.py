@@ -10,7 +10,7 @@ setup(
     author="Juno Hwang",
     author_email="wnsdh10@snu.ac.kr",
     description="BLaPE(Blurred-Laplacian Peak Extraction)",
-    long_description=open("README.md").read(),
+    long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/snu-heritage/blape-sers",
     classifiers=[
