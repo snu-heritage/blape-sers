@@ -1,4 +1,4 @@
-__version__ = "1.0"
+__version__ = "1.1"
 
 from pathlib import Path
 from pybaselines.whittaker import arpls
@@ -16,7 +16,29 @@ def remove_baseline(x):
         print('Baseline removal failed')
         return None
 
-def blape(signal, original_wn, target_wn, sigma=25, is_baseline_removed=False, eps=0.25):
+def anormaly_imputation(sers, window_size=5, threshold=2.0):
+    """
+    Detect and impute anomalies in SERS spectrum.
+    
+    Args:
+        sers (array-like): Input SERS spectrum
+        window_size (int, optional): Size of local window for median calculation. Defaults to 5.
+        threshold (float, optional): Threshold multiplier for standard deviation. Defaults to 2.0.
+    
+    Returns:
+        array-like: SERS spectrum with anomalies imputed, or None if input is None
+    """
+    if sers is None:
+        return None
+    sers = np.array(sers, copy=True)
+    std = np.std(sers)
+    for j in range(window_size, len(sers) - window_size):
+        local_median = np.median(sers[j - window_size:j + window_size + 1])
+        if sers[j] > local_median + threshold * std:
+            sers[j] = local_median
+    return sers
+
+def blape(signal, original_wn, target_wn, sigma=25, is_baseline_removed=False, eps=0.25, anomaly_imputation=True):
     """
     Calculate BLAPE (Baseline-removed Laplacian Peak Enhancement) for Raman spectra.
     
@@ -27,6 +49,7 @@ def blape(signal, original_wn, target_wn, sigma=25, is_baseline_removed=False, e
         sigma (float, optional): Standard deviation for Gaussian smoothing. Defaults to 25.
         is_baseline_removed (bool, optional): Whether baseline is already removed. Defaults to False.
         eps (float, optional): Small value to avoid blow up. Defaults to 0.25.
+        anomaly_imputation (bool, optional): Whether to apply anomaly imputation before processing. Defaults to True.
     
     Returns:
         array-like: BLAPE processed spectrum interpolated to target wavenumbers
@@ -34,9 +57,10 @@ def blape(signal, original_wn, target_wn, sigma=25, is_baseline_removed=False, e
     signal = np.array(signal)
     
     if len(signal.shape) > 1 and signal.shape[0] > 1:
-        # batch processing
         results = []
         for single_signal in signal:
+            if anomaly_imputation:
+                single_signal = anormaly_imputation(single_signal)
             if not is_baseline_removed:
                 single_signal = remove_baseline(single_signal)
             
@@ -49,13 +73,15 @@ def blape(signal, original_wn, target_wn, sigma=25, is_baseline_removed=False, e
             results.append(interpolated)
         return np.array(results)
     else:
-        # single sample processing
         if len(signal.shape) > 1:
             signal = signal.flatten()
-            
-        laplacian = [-1/560, 8/315, -1/5, 8/5, -205/72, 8/5, -1/5, 8/315, -1/560]
+        
+        if anomaly_imputation:
+            signal = anormaly_imputation(signal)
         if not is_baseline_removed:
             signal = remove_baseline(signal)
+            
+        laplacian = [-1/560, 8/315, -1/5, 8/5, -205/72, 8/5, -1/5, 8/315, -1/560]
         peaks = -np.convolve(gaussian_filter1d(signal, sigma), laplacian, 'same')/(gaussian_filter1d(signal, sigma)+eps*np.mean(np.abs(signal)))
         peaks[peaks<0] = 0
         peaks = peaks[10:-10]
