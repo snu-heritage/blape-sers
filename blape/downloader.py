@@ -1,86 +1,75 @@
-import hashlib, requests, zipfile, sys
+"""Locate the sample dataset bundled with the :mod:`blape` package.
+
+Earlier versions downloaded the full dataset from Zenodo. The package now ships a
+small, label-balanced sample subset under ``blape/sample_data`` so the demo and
+tests run without any network access or external download.
+
+:func:`download_data` is kept as a thin, backward-compatible shim that simply
+points to (or copies) the bundled sample data; no network download is performed.
+"""
+
+import shutil
 from pathlib import Path
 
-# ------------- Zenodo 설정 ------------- #
-RECORD_ID = "15487399"
-BASE_URL  = f"https://zenodo.org/record/{RECORD_ID}/files"
-
-FILES = {
-    "raw.zip": {
-        "flag": "raw",
-        "md5": "f0e6341ec9ba3519127648324758904a",
-    },
-    "baseline_removed.zip": {
-        "flag": "baseline_removed",
-        "md5": "f6f7d5fa40f26b3cd1c6ca7826cca7e5",
-    },
-}
+# Sample data bundled inside the package: raw/ and baseline_removed/ subfolders.
+SAMPLE_DATA_DIR = Path(__file__).resolve().parent / "sample_data"
 
 
-# ------------ 유틸리티 ------------ #
-def _md5(fname, chunk=1 << 20):
-    import hashlib, io
-    h = hashlib.md5()
-    with open(fname, "rb") as f:
-        for blk in iter(lambda: f.read(chunk), b""):
-            h.update(blk)
-    return h.hexdigest()
+def get_sample_data_dir() -> Path:
+    """Return the path to the sample dataset bundled with the package."""
+    if not SAMPLE_DATA_DIR.exists():
+        raise FileNotFoundError(
+            f"Bundled sample data not found at {SAMPLE_DATA_DIR}. "
+            "Reinstall the package, or regenerate it from the full dataset with "
+            "scripts/make_sample_data.py."
+        )
+    return SAMPLE_DATA_DIR
 
-def _bar(cur, total, w=40):
-    done = int(w * cur / total)
-    sys.stdout.write(f"\r[{'#'*done}{'-'*(w-done)}] {cur/total:6.2%}")
-    sys.stdout.flush()
 
-def zenodo_download(fname: str, dest: Path):
-    url = f"{BASE_URL}/{fname}?download=1"
-    with requests.get(url, stream=True) as r:
-        r.raise_for_status()
-        total = int(r.headers.get("Content-Length", 0))
-        downloaded = 0
-        with open(dest, "wb") as f:
-            for chunk in r.iter_content(8192):
-                if chunk:
-                    f.write(chunk)
-                    downloaded += len(chunk)
-                    _bar(downloaded, total)
-    _bar(total, total); print()   # 끝줄
+def download_data(path=None, raw=True, baseline_removed=True):
+    """Deprecated: the sample dataset now ships with the package.
 
-# ------------ 메인 ------------ #
-def download_data(path='data', raw=True, baseline_removed=True):
-    targets = [
-        name for name, meta in FILES.items()
-        if (raw and meta["flag"] == "raw")
-        or (baseline_removed and meta["flag"] == "baseline_removed")
-    ]
-    if not targets:
-        print("No data selected."); return None
+    No data is downloaded. If ``path`` is given, the bundled sample data is copied
+    there so that existing ``download_data(path=...); read_data(path=...)``
+    workflows keep working; otherwise the bundled path is returned directly.
 
-    data_dir = Path(path); data_dir.mkdir(exist_ok=True)
+    Args:
+        path (str | None): Destination to copy the bundled sample data into. If
+            ``None`` (default), nothing is copied and the bundled path is returned.
+        raw (bool): Copy the ``raw`` split. Defaults to True.
+        baseline_removed (bool): Copy the ``baseline_removed`` split. Defaults to True.
 
-    for name in targets:
-        zip_path = data_dir / name
-        extract_dir = data_dir / Path(name).stem   # zip 이름 == 폴더 이름
-        if extract_dir.exists():
-            print(f"[=] {extract_dir} already exists → skip")
+    Returns:
+        str: Path to the directory that contains the ``raw`` / ``baseline_removed``
+        sample data.
+    """
+    src = get_sample_data_dir()
+    if path is None:
+        return str(src)
+
+    dst = Path(path)
+    dst.mkdir(parents=True, exist_ok=True)
+
+    splits = []
+    if raw:
+        splits.append("raw")
+    if baseline_removed:
+        splits.append("baseline_removed")
+
+    for split in splits:
+        s = src / split
+        d = dst / split
+        if not s.exists():
             continue
+        if d.exists():
+            print(f"[=] {d} already exists → skip")
+            continue
+        shutil.copytree(s, d)
+        print(f"[+] Copied bundled {split} sample data → {d}")
 
-        print(f"[+] Downloading {name}")
-        zenodo_download(name, zip_path)
-
-        # 무결성
-        if _md5(zip_path) != FILES[name]["md5"]:
-            raise RuntimeError(f"Checksum mismatch for {name}")
-
-        # 압축 해제
-        print(f"    Extracting to {extract_dir}/ …")
-        with zipfile.ZipFile(zip_path) as z:
-            z.extractall(extract_dir)
-        zip_path.unlink()
-        print("    Done. ZIP removed.")
-
-    print("All requested data ready.")
-    return str(data_dir.resolve())
+    print("All requested sample data ready (no download needed).")
+    return str(dst.resolve())
 
 
 if __name__ == "__main__":
-    download_data() 
+    print(get_sample_data_dir())

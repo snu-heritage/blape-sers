@@ -259,15 +259,20 @@ def evaluate_multilabel_models(models, X_test, y_test_dict, label_encoders, verb
         
         # Get class names
         class_names = label_encoders[category].classes_
-        
-        # Classification report with zero_division handling
-        report = classification_report(y_true, y_pred, target_names=class_names, 
+        labels = np.arange(len(class_names))
+
+        # Classification report with zero_division handling.
+        # Pass explicit `labels` so the report stays aligned with all encoder
+        # classes even when a split does not contain every class.
+        report = classification_report(y_true, y_pred, labels=labels,
+                                     target_names=class_names,
                                      output_dict=True, zero_division=0)
         if verbose:
-            print(classification_report(y_true, y_pred, target_names=class_names, zero_division=0))
-        
+            print(classification_report(y_true, y_pred, labels=labels,
+                                        target_names=class_names, zero_division=0))
+
         # Confusion matrix
-        cm = confusion_matrix(y_true, y_pred)
+        cm = confusion_matrix(y_true, y_pred, labels=labels)
         
         results[category] = {
             'classification_report': report,

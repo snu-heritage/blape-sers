@@ -5,7 +5,7 @@ from pybaselines.whittaker import arpls
 from scipy.ndimage import gaussian_filter1d
 import numpy as np
 import pandas as pd
-from .downloader import download_data
+from .downloader import download_data, get_sample_data_dir
 from .evaluation import *
 
 def remove_baseline(x):
@@ -89,9 +89,21 @@ def blape(signal, original_wn, target_wn, sigma=25, is_baseline_removed=False, e
         interpolated = np.interp(target_wn, original_wn[10:-10], peaks)
         return interpolated
 
-def read_data(path='data'):
-    raw_path = Path(path) / 'raw'
-    baseline_path = Path(path) / 'baseline_removed'
+def read_data(path=None):
+    """Load wavenumbers, raw SERS signals, and baseline-removed signals.
+
+    Args:
+        path (str | None): Directory containing ``raw`` and/or ``baseline_removed``
+            subfolders of ``*.csv`` files. If ``None`` (default), the sample
+            dataset bundled with the package is used.
+
+    Returns:
+        dict: Mapping of sample code -> dict with ``signal``, ``baseline_removed``,
+        and ``wavenumbers`` (whichever are available).
+    """
+    base = Path(path) if path is not None else get_sample_data_dir()
+    raw_path = base / 'raw'
+    baseline_path = base / 'baseline_removed'
     
     files_raw = []
     if raw_path.exists():

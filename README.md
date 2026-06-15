@@ -2,9 +2,7 @@
 
 **🚀 Quick Start: Check out our [blape-demo.ipynb](./blape-demo.ipynb) for a comprehensive demonstration!**
 
-**☁️ Try it online: [Run the demo directly in Google Colab](https://colab.research.google.com/drive/1txVTaIwoqdt0b7VSS80Vj45Vv4nStDQR) without any setup!**
-
-A Python package for SERS (surface-enhanced Raman spectroscopy) signal preprocessing and analysis using the BLaPE (blurred-Laplacian peak extraction) algorithm. This package provides easy data download, fast BLaPE algorithm application, and evaluation pipelines for multiclass classification.
+A Python package for SERS (surface-enhanced Raman spectroscopy) signal preprocessing and analysis using the BLaPE (blurred-Laplacian peak extraction) algorithm. This package bundles a ready-to-use sample dataset, fast BLaPE algorithm application, and evaluation pipelines for multiclass classification.
 
 ## Installation
 
@@ -16,11 +14,16 @@ pip install git+https://github.com/snu-heritage/blape-sers.git
 
 ## Data
 
-📥 [**[Link] SERS of Korean Traditional Organic Dye-Dyed Samples According to Aging Process**](https://zenodo.org/records/15487399)
+This repository ships a small, **label-balanced sample dataset** bundled inside the
+package (`blape/sample_data/`), so the demo and examples run out of the box with no
+external download. It contains a subset of the full study data — 24 sample codes
+covering all 6 base materials, all 12 dyes, all 5 mordants, and all 3 aging
+conditions (6 spectra per code) — stored as `*.csv` files (one wavenumber column
+plus spectra columns) under `raw/` and `baseline_removed/`.
 
-By default, the data is downloaded to the `data/` folder in the current directory. After the download is complete, it is recommended to check that `*.csv` files have been created in that path.
-
-Our data is provided through [**Zenodo**](https://zenodo.org/records/15487399), so for faster download, you can download the same data through [**our GoogleDrive folder**](https://drive.google.com/drive/folders/1o4CAkfUIpgeqJb1EIK4ruCsm3VMHinA5?usp=sharing).
+The sample data loads automatically via `blape.read_data()`. To use your own
+dataset instead, pass a directory that contains `raw/` and/or `baseline_removed/`
+subfolders: `blape.read_data(path='your_data')`.
 
 ## Quick Usage
 
@@ -30,9 +33,8 @@ Our data is provided through [**Zenodo**](https://zenodo.org/records/15487399), 
 import blape
 import numpy as np
 
-# Download and load sample data
-blape.download_data(path='data')
-data = blape.read_data(path='data')
+# Load the bundled sample data
+data = blape.read_data()
 
 # Get common wavenumber range
 target_wn = blape.get_common_wavenumber_range(data)
@@ -71,7 +73,10 @@ blape/
 ├── blape/
 │   ├── __init__.py          # Main package with core functions
 │   ├── evaluation.py        # Model training and evaluation utilities
-│   └── downloader.py        # Data download functionality
+│   ├── downloader.py        # Bundled sample-data resolver
+│   └── sample_data/         # Bundled SERS sample dataset (raw/ & baseline_removed/)
+├── scripts/
+│   └── make_sample_data.py  # How the bundled sample data was generated
 ├── blape-demo.ipynb         # Comprehensive demonstration notebook
 ├── test.py                  # Example usage and testing script
 ├── setup.py                 # Package setup configuration

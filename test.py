@@ -5,9 +5,8 @@ import matplotlib.pyplot as plt
 import random
 from tqdm import tqdm
 
-# Download and load data
-blape.download_data(path='data')
-data = blape.read_data(path='data')
+# Load the bundled sample data
+data = blape.read_data()
 
 # Determine the common wavenumber range across all data samples
 target_wn = blape.get_common_wavenumber_range(data)
@@ -174,6 +173,7 @@ for sigma in tqdm(sigma_values, desc="Testing sigma values"):
 
 # Print best sigma for each category
 print("\n=== BEST SIGMA FOR EACH CATEGORY ===")
+categories = ['base', 'dye', 'mordant', 'aging']
 for category in categories:
     best_sigma = min(sigma_results.keys(), key=lambda x: sigma_results[x][category])
     best_error = sigma_results[best_sigma][category]
